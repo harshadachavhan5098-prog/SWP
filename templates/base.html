@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}SWP · Skill Exchange Platform{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/room.css') }}">
+  {% block styles %}{% endblock %}
+</head><body class="{% block body_class %}{% endblock %}">
+{% if current_user.is_authenticated %}
+<header class="topbar"><a class="brand brand-small" href="{{ url_for('main.home') }}"><span>SWP</span></a><a class="wordmark" href="{{ url_for('main.home') }}">Swaply</a><form class="top-search" action="{{ url_for('main.search') }}"><input name="q" placeholder="Search skills, people, resources…" aria-label="Search"></form><div class="top-actions"><a href="{{ url_for('main.notifications') }}" aria-label="Notifications" class="icon-link">♧<i class="notification-dot"></i></a><a href="{{ url_for('social.profile', username=current_user.username) }}" class="avatar avatar-letter">{{ current_user.username[0]|upper }}</a></div></header>
+{% endif %}
+<main class="page-shell {% if current_user.is_authenticated %}with-nav{% endif %}">
+{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<section class="flash-stack">{% for category,message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</section>{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+</main>
+{% if current_user.is_authenticated %}
+<nav class="bottom-nav" aria-label="Primary navigation"><a href="{{ url_for('main.home') }}" class="{% if request.endpoint == 'main.home' %}active{% endif %}"><b>⌂</b><span>Home</span></a><a href="{{ url_for('main.search') }}" class="{% if request.endpoint == 'main.search' %}active{% endif %}"><b>⌕</b><span>Search</span></a><a class="create-nav" href="{{ url_for('social.create_post') }}" aria-label="Create post">＋</a><a href="{{ url_for('social.friends') }}" class="{% if request.endpoint in ['social.friends','social.direct_messages'] %}active{% endif %}"><b>◌</b><span>People</span></a><a href="{{ url_for('social.profile', username=current_user.username) }}" class="{% if request.endpoint == 'social.profile' %}active{% endif %}"><b>♙</b><span>Profile</span></a></nav>
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>{% block scripts %}{% endblock %}
+</body></html>

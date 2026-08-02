@@ -1,0 +1,9 @@
+(() => {
+  const page = document.querySelector('[data-chat="direct"]'); if (!page) return;
+  const username = page.dataset.user, list = document.querySelector('#message-list'), form = page.querySelector('form'), input = form.querySelector('input[name="body"]'), typing = document.querySelector('#typing-status');
+  const render = (messages) => { list.replaceChildren(); messages.forEach((message) => { const article = document.createElement('article'); article.className = 'message'; const name = document.createElement('strong'); name.textContent = message.username; const body = document.createElement('p'); body.textContent = message.body; const time = document.createElement('small'); time.textContent = message.created_at; article.append(name, body); if (message.attachment_name) { const attachment = document.createElement('a'); attachment.href = `/media/message/${message.id}`; attachment.target = '_blank'; attachment.textContent = `▧ ${message.attachment_name}`; article.append(attachment); } article.append(time); list.append(article); }); list.scrollTop = list.scrollHeight; };
+  const poll = async () => { try { const response = await fetch(`/messages/${encodeURIComponent(username)}/data`); if (response.ok) render(await response.json()); const state = await fetch(`/messages/${encodeURIComponent(username)}/typing`); if (state.ok) typing.textContent = (await state.json()).typing ? 'typing…' : `@${username}`; } catch (_) {} };
+  form.addEventListener('submit', async (event) => { event.preventDefault(); const response = await window.swpFetch(form.action, {method:'POST', body:new FormData(form)}); if (response.ok) { form.reset(); await poll(); } });
+  let typingTimer; input.addEventListener('input', () => { clearTimeout(typingTimer); typingTimer = setTimeout(() => window.swpFetch(`/messages/${encodeURIComponent(username)}/typing`, {method:'POST'}), 260); });
+  poll(); setInterval(poll, 4000);
+})();
