@@ -61,3 +61,4 @@ def close_db(_error=None):
 def init_db():
     Path(current_app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
     get_db().executescript(SCHEMA); get_db().commit()
+print("DATABASE CORE LOADED - QUERY EXISTS")
