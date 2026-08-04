@@ -119,11 +119,55 @@ def update_skills():
 @social_bp.post("/friends/<int:user_id>/request")
 @login_required
 def request_friend(user_id):
-    if user_id == current_user.id or not query("SELECT id FROM users WHERE id=? AND is_active=1", (user_id,), one=True): abort(404)
+    print("\n========== FRIEND REQUEST ==========")
+    print("Current User ID:", current_user.id)
+    print("Target User ID :", user_id)
+
+    if user_id == current_user.id:
+        print("Cannot send request to self")
+        abort(404)
+
+    user = query(
+        "SELECT id FROM users WHERE id=? AND is_active=1",
+        (user_id,),
+        one=True,
+    )
+
+    print("Target user exists:", user)
+
+    if not user:
+        print("User not found")
+        abort(404)
+
     existing = friendship_status(current_user.id, user_id)
+    print("Existing friendship:", existing)
+
     if not existing:
-        friendship_id = execute("INSERT INTO friendships (requester_id,recipient_id) VALUES (?,?)", (current_user.id, user_id))
-        notify(user_id, "friend_request", f"{current_user.username} sent you a friend request.", current_user.id, "friendship", friendship_id)
+        try:
+            friendship_id = execute(
+                "INSERT INTO friendships (requester_id, recipient_id) VALUES (?, ?)",
+                (current_user.id, user_id),
+            )
+
+            print("Friendship inserted:", friendship_id)
+
+            notify(
+                user_id,
+                "friend_request",
+                f"{current_user.username} sent you a friend request.",
+                current_user.id,
+                "friendship",
+                friendship_id,
+            )
+
+            print("Notification sent")
+
+        except Exception as e:
+            print("DATABASE ERROR:", e)
+            raise
+
+    print("========== END ==========\n")
+
     return redirect(request.referrer or url_for("main.search"))
 
 
