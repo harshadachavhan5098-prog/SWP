@@ -188,6 +188,7 @@ def toggle_follow(user_id):
 @login_required
 def respond_friend(friendship_id, action):
     friendship = query("SELECT * FROM friendships WHERE id=?", (friendship_id,), one=True)
+    print("ACCEPT DEBUG:", friendship, current_user.id, friendship_id)
     if not friendship or (friendship["recipient_id"] != current_user.id and action in {"accept", "reject"}): abort(403)
     if action == "accept":
         execute("UPDATE friendships SET status='accepted',responded_at=CURRENT_TIMESTAMP WHERE id=?", (friendship_id,)); notify(friendship["requester_id"], "friend_accepted", f"{current_user.username} accepted your request.", current_user.id, "friendship", friendship_id)
